@@ -25,7 +25,7 @@ mkDiagram :: Int -> IO (Diagram B)
 mkDiagram i = do
   putStrLn $ "Generating artwork with seed: " ++ (show i)
   let rgen = mkStdGen i
-  d <- runSystem (simulate 10000) =<< initWorld
+  d <- runSystem (simulate 10000 rgen) =<< initWorld
   return $ bgFrame 10 beige d
 
 
@@ -55,9 +55,9 @@ colorFlavour Paper   = gold
 colorFlavour Scissor = magenta
 
 
-simulate :: Int -> System World (Diagram B)
-simulate x = do
-  initEnts
+simulate :: Int -> StdGen -> System World (Diagram B)
+simulate x rgen = do
+  evalStateT mkEnts rgen
   sequence (replicate x step)
   p <- getPaths
   return $ foldMap pastToDiag p # opacityGroup 0.7
@@ -67,14 +67,21 @@ data RandVars = RandVars
   , lops :: LOP
   }
 
-mkEnt :: Angle Double -> Flavour -> System World Entity
-mkEnt a f = newEntity (Position (V2 0 0), Velocity (e (i @@ deg)), Past [], f)
+mkEnt :: Flavour -> Double -> System World Entity
+mkEnt f a = newEntity (Position (V2 0 0), Velocity (e (a @@ deg)), Past [], f)
 
-mkEnts :: StdGen -> [System World Entity]
-mkEnts StdGen
+mkEnts :: StateT StdGen (System World) ()
+mkEnts = do
+  state (randomR (0, 360)) >>= lift . (mkEnt Rock)
+  state (randomR (0, 360)) >>= lift . (mkEnt Paper)
+  state (randomR (0, 360)) >>= lift . (mkEnt Scissor)
+  extraParts <- state $ randomR (0, 3)
+  sequence_ . replicate extraParts $ do
+    a <- state $ randomR (0, 360)
+    fn :: Int <- state $ randomR (0,2)
+    lift $ mkEnt (selectFlavour fn) a
+  where
+    selectFlavour 0 = Rock
+    selectFlavour 1 = Paper
+    selectFlavour _ = Scissor
 
-initEnts ::   [System World Entity]
-initEnts = do
-  newEntity (Position (V2 0 0), Velocity (e (0 @@ deg)), Past [], Rock)
-  newEntity (Position (V2 0 0), Velocity (e (120 @@ deg)), Past [], Paper)
-  newEntity (Position (V2 0 0), Velocity (e (240 @@ deg)), Past [], Scissor)
