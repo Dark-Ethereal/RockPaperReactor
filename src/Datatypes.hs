@@ -23,6 +23,11 @@ instance Ord Flavour where
   (<=) Scissor Paper   = False
   (<=) Scissor Scissor = True
 
+colorFlavour :: Flavour -> Colour Double
+colorFlavour Rock    = cyan
+colorFlavour Paper   = gold
+colorFlavour Scissor = magenta
+
 instance Component Flavour where
   type Storage Flavour = Map Flavour
 
@@ -39,14 +44,6 @@ instance Component Past where
   type Storage Past = Map Past
 
 type LOP = (Flavour, Position) -> (Flavour, Position, Velocity) -> Velocity
-
--- Shitty library wants a monoid instance for no good reason.
---instance Monoid LOP where
---  mempty = LOP $ \_ _ -> 0 @@ deg
---  mappend = flip const
-
---instance Component LOP where
---  type Storage LOP = Global LOP
 
 makeWorld "World" [''Position, ''Velocity, ''Past, ''Flavour]
 

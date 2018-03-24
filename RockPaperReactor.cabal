@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: aa49493009700d87119d119b0c5e3518909b6d124257edd06fc8cf3b4ced2d61
+-- hash: 85064a1771debc3dd8fb3edf2c944bc272452efb56d1ae5b24ee1bb423f3ab17
 
 name:           RockPaperReactor
 version:        0.1.0.0
@@ -42,6 +42,7 @@ library
       Lib
       ParticleLaws
       RandomizedComponents
+      Simulate
   other-modules:
       Paths_RockPaperReactor
   default-language: Haskell2010
